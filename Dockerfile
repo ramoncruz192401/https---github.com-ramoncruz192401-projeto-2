@@ -1,5 +1,5 @@
 # Imagem de runtime para .NET 8
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:3.1 AS runtime
 WORKDIR /app
 
 # Copia o build gerado no CodeBuild para dentro da imagem
