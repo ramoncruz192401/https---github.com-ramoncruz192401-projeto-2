@@ -1,27 +1,37 @@
 version: 0.2
 
 phases:
+  install:
+    runtime-versions:
+      dotnet: 8.0
+    commands:
+      - echo "Iniciando ambiente com .NET 8"
+      - echo "Restaurando dependências..."
+      - dotnet restore
+
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo "Autenticando no Amazon ECR..."
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 524664341235.dkr.ecr.us-east-1.amazonaws.com
+      - REPOSITORY_URI=524664341235.dkr.ecr.us-east-1.amazonaws.com/meusite
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
 
   build:
     commands:
-      - echo Build started on `date`
-      - echo Building the Docker image...
-      - docker build -t 524664341235.dkr.ecr.us-east-1.amazonaws.com/meusite:$IMAGE_TAG .
-      - docker tag 524664341235.dkr.ecr.us-east-1.amazonaws.com/meusite:$IMAGE_TAG 524664341235.dkr.ecr.us-east-1.amazonaws.com/meusite:latest
+      - echo "Publicando aplicação .NET..."
+      - dotnet publish -c Release -o out
+      - echo "Construindo a imagem Docker..."
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
   post_build:
     commands:
-      - echo Build completed on `date`
-      - echo Pushing Docker images...
-      - docker push 524664341235.dkr.ecr.us-east-1.amazonaws.com/meusite:$IMAGE_TAG
-      - docker push 524664341235.dkr.ecr.us-east-1.amazonaws.com/meusite:latest
-      - echo Writing image definitions file...
-      - printf '[{"name":"meusite-container","imageUri":"%s"}]' 524664341235.dkr.ecr.us-east-1.amazonaws.com/meusite:$IMAGE_TAG > imagedefinitions.json
+      - echo "Push das imagens no ECR..."
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:latest
+      - echo "Gerando imagedefinitions.json para CodeDeploy..."
+      - printf '[{"name":"meusite-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
-  files: imagedefinitions.json
+  files:
+    - imagedefinitions.json
