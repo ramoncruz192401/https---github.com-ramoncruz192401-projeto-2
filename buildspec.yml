@@ -12,7 +12,7 @@ phases:
   pre_build:
     commands:
       - echo "Autenticando no Amazon ECR..."
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 524664341235.dkr.ecr.us-east-1.amazonaws.com
+      - $(aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 524664341235.dkr.ecr.us-east-1.amazonaws.com)
       - export REPOSITORY_URI=524664341235.dkr.ecr.us-east-1.amazonaws.com/meusite
       - export IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
 
@@ -26,7 +26,7 @@ phases:
 
   post_build:
     commands:
-      - echo "Push das imagens para o Amazon ECR..."
+      - echo "Push das imagens no ECR..."
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest
       - echo "Gerando imagedefinitions.json para CodeDeploy..."
