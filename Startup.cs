@@ -26,7 +26,7 @@ namespace MEUSITE
             {
                 endpoints.MapGet("/", async context =>
                 {
-                    await context.Response.WriteAsync("Bem-vindo ao Ramon!");
+                    await context.Response.WriteAsync("Bem-vindo Projeto ao Ramon!");
                 });
             });
         }
